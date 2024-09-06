@@ -1,4 +1,2 @@
 # Stock-News-Sentiment-Analysis-NLP-
-
-
-![Screenshot 2024-09-06 184235](https://github.com/user-attachments/assets/d75cc7d0-471e-4d8f-9a54-009ab41c3364)
+![Bar_graph](https://github.com/user-attachments/assets/34b46ea7-c01d-4194-a105-344d3cadf12b)
