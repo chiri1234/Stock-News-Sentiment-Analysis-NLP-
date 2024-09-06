@@ -12,6 +12,7 @@ news_tables = {}
 for ticker in tickers:
     url = finviz_url + ticker
     req = Request(url=url, headers={'user-agent': 'my-app'})
+
     try:
         response = urlopen(req)
         html = BeautifulSoup(response, features='html.parser')
@@ -39,27 +40,29 @@ for ticker, news_table in news_tables.items():
 
 df = pd.DataFrame(parsed_data, columns=['ticker', 'date', 'time', 'title'])
 
-# Convert 'date' to datetime, handling errors
-df['date'] = pd.to_datetime(df['date'], format='%b %d', errors='coerce')
+# Handle date format and fill NaT with today's date
+df['date'] = pd.to_datetime(df['date'], format='%b %d', errors='coerce').dt.date
+df['date'] = df['date'].fillna(pd.to_datetime('today').date())
 
-# Fill missing dates with today's date
-df['date'] = df['date'].fillna(pd.Timestamp.today().floor('D'))
-
-# Initialize VADER sentiment analyzer
+# Initialize VADER for sentiment analysis
 vader = SentimentIntensityAnalyzer()
 
 # Calculate compound sentiment score
 df['compound'] = df['title'].apply(lambda title: vader.polarity_scores(title)['compound'])
 
-# Ensure 'compound' is numeric
+# Ensure the 'compound' column contains numeric data only
 df['compound'] = pd.to_numeric(df['compound'], errors='coerce')
 
-# Group by ticker and date, calculate mean sentiment
+# Group by ticker and date, and calculate the mean of the 'compound' column
 mean_df = df.groupby(['ticker', 'date'])['compound'].mean().unstack()
 
-# Plot sentiment scores
+# Define a list of colors for each company
+colors = ['blue', 'green', 'red', 'orange', 'purple']
+
+# Plot sentiment scores over different dates as a bar graph with custom colors
 if not mean_df.empty:
-    mean_df.plot(kind='bar', figsize=(10, 6), colormap='tab10')
+    mean_df.plot(kind='bar', figsize=(10, 6), color=colors)
+
     plt.title('Sentiment Analysis for Each Company by Date')
     plt.xlabel('Date')
     plt.ylabel('Average Sentiment Score')
